@@ -44,6 +44,7 @@ function SkillNode({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const textRef = useRef<THREE.Mesh>(null);
+  const { camera } = useThree();
 
   // Smooth animations for hover/selection
   const { scale, emissiveIntensity } = useSpring({
@@ -60,6 +61,13 @@ function SkillNode({
       // Floating animation
       const time = state.clock.getElapsedTime();
       meshRef.current.position.y = position[1] + Math.sin(time + skill.originalIndex) * 0.1;
+    }
+  });
+
+  // Make text always face the camera
+  useFrame(() => {
+    if (textRef.current) {
+      textRef.current.quaternion.copy(camera.quaternion);
     }
   });
 
@@ -235,7 +243,7 @@ export function PortfolioCanvas({
           near: 0.1,
           far: 1000 
         }}
-        style={{ background: 'transparent' }}
+        style={{ background: '#000000' }}
       >
         {/* Lighting */}
         <ambientLight intensity={0.6} />
