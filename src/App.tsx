@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import './App.css';
+import { PortfolioCanvas, type Skill } from './PortfolioCanvas';
+import { useState } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Sample skills data
+  const skills: Skill[] = [
+    {
+      label: 'JavaScript',
+      category: 'Programming Language',
+      description: 'A versatile programming language for web development.',
+      hue: 50,
+      isRoot: true,
+    },
+    {
+      label: 'React',
+      category: 'Library',
+      description: 'A JavaScript library for building user interfaces.',
+      hue: 200,
+      isPrimary: true,
+      cluster: 'Frontend',
+    },
+    {
+      label: 'TypeScript',
+      category: 'Language',
+      description: 'A strongly typed programming language that builds on JavaScript.',
+      hue: 210,
+      cluster: 'Frontend',
+    },
+    {
+      label: 'Node.js',
+      category: 'Runtime',
+      description: 'JavaScript runtime built on Chrome\'s V8 engine.',
+      hue: 120,
+      cluster: 'Backend',
+    },
+    {
+      label: 'Express',
+      category: 'Framework',
+      description: 'Fast, unopinionated, minimalist web framework for Node.js.',
+      hue: 100,
+      cluster: 'Backend',
+    },
+  ];
+
+  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number>(0);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <PortfolioCanvas
+      skills={skills}
+      selectedNodeIndex={selectedNodeIndex}
+      onNodeSelect={setSelectedNodeIndex}
+      theme="dark"
+    />
+  );
 }
 
-export default App
+export default App;
