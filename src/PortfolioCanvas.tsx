@@ -2,7 +2,7 @@ import React, { useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame, useThree, extend } from '@react-three/fiber';
 import { useSpring, animated } from '@react-spring/three';
-import { Text, OrbitControls } from '@react-three/drei';
+import { Text, OrbitControls, Html } from '@react-three/drei';
 
 export interface Skill {
   label: string;
@@ -44,6 +44,8 @@ function SkillNode({
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const textRef = useRef<THREE.Mesh>(null);
+  const rectRef = useRef<THREE.Mesh>(null);
+  const borderRef = useRef<THREE.Mesh>(null);
   const { camera } = useThree();
 
   // Smooth animations for hover/selection
@@ -64,15 +66,17 @@ function SkillNode({
     }
   });
 
-  // Make text always face the camera
+  // Make text and rectangle always face the camera
   useFrame(() => {
-    if (textRef.current) {
-      textRef.current.quaternion.copy(camera.quaternion);
-    }
+    if (textRef.current) textRef.current.quaternion.copy(camera.quaternion);
+    if (rectRef.current) rectRef.current.quaternion.copy(camera.quaternion);
+    if (borderRef.current) borderRef.current.quaternion.copy(camera.quaternion);
   });
 
   const nodeColor = `hsl(${skill.hue}, 70%, 60%)`;
   const nodeSize = skill.isRoot ? 0.8 : skill.isPrimary ? 0.6 : 0.4;
+  const rectWidth = skill.isRoot ? 1.2 : 0.9;
+  const rectHeight = skill.isRoot ? 0.5 : 0.35;
 
   return (
     <group position={position}>
@@ -93,24 +97,44 @@ function SkillNode({
         />
       </animated.mesh>
 
-      {/* 3D Text Label */}
       {(isSelected || isHovered || skill.isRoot) && (
-        <Text
-          ref={textRef}
-          position={[0, nodeSize + 0.8, 0]}
-          fontSize={skill.isRoot ? 0.3 : 0.2}
-          color={theme === 'dark' ? '#ffffff' : '#000000'}
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={3}
-        >
-          {skill.label}
-          <meshBasicMaterial
-            color={theme === 'dark' ? '#ffffff' : '#000000'}
-            transparent
-            opacity={0.9}
-          />
-        </Text>
+        <>
+          {/* Connection line from node to label (optional, can remove if label is always at top) */}
+          {/* <line> ... </line> */}
+
+          {/* Screen-space label always at top of viewport */}
+          <Html
+            position={[0, 0, 0]}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translate(-50%, 0)',
+              top: '24px', // always at top of screen
+              pointerEvents: 'none',
+              zIndex: 1000,
+            }}
+            center
+            occlude={false}
+          >
+            <div
+              style={{
+                background: theme === 'dark' ? 'rgba(34,34,34,0.7)' : 'rgba(255,255,255,0.7)',
+                border: '2px solid red',
+                color: theme === 'dark' ? '#fff' : '#000',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: skill.isRoot ? '1.2rem' : '1rem',
+                minWidth: rectWidth * 60,
+                minHeight: rectHeight * 60,
+                textAlign: 'center',
+                pointerEvents: 'none',
+              }}
+            >
+              {skill.label}
+            </div>
+          </Html>
+        </>
       )}
     </group>
   );
@@ -243,7 +267,7 @@ export function PortfolioCanvas({
           near: 0.1,
           far: 1000 
         }}
-        style={{ background: '#000000' }}
+        style={{ background: '#333333' }}
       >
         {/* Lighting */}
         <ambientLight intensity={0.6} />
@@ -256,8 +280,11 @@ export function PortfolioCanvas({
           enableZoom={false}
           autoRotate
           autoRotateSpeed={0.5}
-          maxPolarAngle={Math.PI / 2}
-          minPolarAngle={Math.PI / 2}
+        //   maxPolarAngle={Math.PI / 2}
+        //   minPolarAngle={Math.PI / 2}
+          minPolarAngle={0}
+          maxPolarAngle={Math.PI}
+
         />
 
         {/* Connection Lines */}
