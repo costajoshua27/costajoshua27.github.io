@@ -1,57 +1,69 @@
+// src/App.tsx
+import { Environment } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Suspense } from 'react';
 import './App.css';
-import { PortfolioCanvas, type Skill } from './PortfolioCanvas';
-import { useState } from 'react';
+import SceneManager from './components/SceneManager';
+import CameraController from './components/shared/CameraController';
+import LoadingScreen from './components/ui/LoadingScreen';
+import WorkModeToggle from './components/ui/WorkModeToggle';
+import { useAppStore } from './stores/appStore';
+import { SceneState } from './types/scene';
 
 function App() {
-  // Sample skills data
-  const skills: Skill[] = [
-    {
-      label: 'JavaScript',
-      category: 'Programming Language',
-      description: 'A versatile programming language for web development.',
-      hue: 50,
-      isRoot: true,
-    },
-    {
-      label: 'React',
-      category: 'Library',
-      description: 'A JavaScript library for building user interfaces.',
-      hue: 200,
-      isPrimary: true,
-      cluster: 'Frontend',
-    },
-    {
-      label: 'TypeScript',
-      category: 'Language',
-      description: 'A strongly typed programming language that builds on JavaScript.',
-      hue: 210,
-      cluster: 'Frontend',
-    },
-    {
-      label: 'Node.js',
-      category: 'Runtime',
-      description: 'JavaScript runtime built on Chrome\'s V8 engine.',
-      hue: 120,
-      cluster: 'Backend',
-    },
-    {
-      label: 'Express',
-      category: 'Framework',
-      description: 'Fast, unopinionated, minimalist web framework for Node.js.',
-      hue: 100,
-      cluster: 'Backend',
-    },
-  ];
-
-  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number>(0);
-
+  const scene = useAppStore(state => state.currentScene);
+  const isTransitioning = useAppStore(state => state.isTransitioning);
   return (
-    <PortfolioCanvas
-      skills={skills}
-      selectedNodeIndex={selectedNodeIndex}
-      onNodeSelect={setSelectedNodeIndex}
-      theme="dark"
-    />
+    <div className="app">
+      {/* 3D Canvas */}
+      <Canvas
+        camera={{
+          position: [0, 2, 8],
+          fov: 75,
+          near: 0.1,
+          far: 1000,
+        }}
+        shadows
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: 'high-performance',
+        }}
+      >
+        <Suspense fallback={null}>
+          {/* Lighting */}
+          <ambientLight intensity={0.3} />
+          <directionalLight
+            position={[5, 10, 5]}
+            intensity={1}
+            castShadow
+            shadow-mapSize={[2048, 2048]}
+            shadow-camera-far={50}
+            shadow-camera-left={-10}
+            shadow-camera-right={10}
+            shadow-camera-top={10}
+            shadow-camera-bottom={-10}
+          />
+
+          {/* Environment */}
+          <Environment preset="apartment" />
+
+          {/* Scene Content */}
+          <SceneManager />
+
+          {/* Custom Camera Controller */}
+          <CameraController />
+        </Suspense>
+      </Canvas>
+
+      {/* UI Overlay */}
+      {scene === SceneState.WORK && !isTransitioning ? <WorkModeToggle /> : null}
+
+      {/* Loading Screen */}
+      <Suspense fallback={<LoadingScreen />}>
+        <div />
+      </Suspense>
+    </div>
   );
 }
 
